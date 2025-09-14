@@ -16,5 +16,5 @@ func deleteTaskHandler(res http.ResponseWriter, req *http.Request) {
 		answer.Error = err.Error()
 	}
 
-	writeJson(res, answer)
+	writeJson(res, answer, http.StatusOK)
 }

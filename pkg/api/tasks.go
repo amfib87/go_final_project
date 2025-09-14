@@ -10,6 +10,8 @@ type TasksResp struct {
 	Tasks []*db.Task `json:"tasks"`
 }
 
+const limit int = 50
+
 func tasksHandler(res http.ResponseWriter, req *http.Request) {
 	condText := req.URL.Query().Get("search")
 
@@ -17,21 +19,20 @@ func tasksHandler(res http.ResponseWriter, req *http.Request) {
 	if condText != "" {
 		date, err := time.Parse("02.01.2006", condText)
 		if err == nil {
-			condDate = date.Format("20060102")
+			condDate = date.Format(formatDate)
 		}
 	}
 
-	tasks, err := db.Tasks(50, condText, condDate) // в параметре максимальное количество записей
+	var answer Answer
+	tasks, err := db.Tasks(limit, condText, condDate) // в параметре максимальное количество записей
 	if err != nil {
 
-		var answer Answer
-		if err != nil {
-			answer.Error = err.Error()
-		}
-		writeJson(res, answer)
+		answer.Error = err.Error()
+
+		writeJson(res, answer, http.StatusBadRequest)
 		return
 	}
 	writeJson(res, TasksResp{
 		Tasks: tasks,
-	})
+	}, http.StatusOK)
 }

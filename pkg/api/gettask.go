@@ -12,9 +12,9 @@ func getTaskHandler(res http.ResponseWriter, req *http.Request) {
 	task, err := db.GetTask(id)
 	if err != nil {
 		answer.Error = err.Error()
-		writeJson(res, answer)
+		writeJson(res, answer, http.StatusBadRequest)
 		return
 	}
 
-	writeJson(res, task)
+	writeJson(res, task, http.StatusOK)
 }

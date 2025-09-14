@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -18,6 +17,8 @@ func Init() {
 	http.HandleFunc("/api/task/done", auth(doneHandler))
 	http.HandleFunc("/api/signin", signinHandler)
 }
+
+var Port string
 
 func taskHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -39,8 +40,7 @@ func taskHandler(w http.ResponseWriter, r *http.Request) {
 func auth(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// смотрим наличие пароля
-		pass := os.Getenv("TODO_PASSWORD")
-		if len(pass) > 0 {
+		if len(PassVar) > 0 {
 
 			var jwtToken string // JWT-токен из куки
 			// получаем куку
@@ -49,7 +49,7 @@ func auth(next http.HandlerFunc) http.HandlerFunc {
 				jwtToken = cookie.Value
 			}
 
-			hashPass := sha256.Sum256([]byte(pass))
+			hashPass := sha256.Sum256([]byte(PassVar))
 			// здесь код для валидации и проверки JWT-токена
 
 			claims := jwt.MapClaims{}

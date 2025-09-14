@@ -8,6 +8,7 @@ import (
 )
 
 var Db *sql.DB
+var FileDbEnv string
 
 func Init(dbFile string) error {
 

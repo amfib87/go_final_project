@@ -8,7 +8,10 @@ RUN go mod download
 
 COPY . .
 
+ENV TODO_PORT=7540
+
 RUN GOOS=linux GOARCH=amd64 go build -o /finalTask
 
-EXPOSE 7540
+EXPOSE $TODO_PORT
+
 CMD ["/finalTask"] 

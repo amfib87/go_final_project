@@ -14,14 +14,26 @@ func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Print("No .env file found")
 	}
+
+	api.PassVar = os.Getenv("TODO_PASSWORD")
+	if len(api.PassVar) == 0 {
+		log.Print("password is empty")
+	}
+
+	api.Port = ":" + os.Getenv("TODO_PORT")
+	if len(api.PassVar) == 0 {
+		log.Print("port is empty")
+	}
+
+	db.FileDbEnv = os.Getenv("TODO_DBFILE")
+
 }
 
 func main() {
 	fileDb := "scheduler.db"
-	fileDbEnv := os.Getenv("TODO_DBFILE")
 
-	if fileDbEnv != "" {
-		fileDb = fileDbEnv
+	if db.FileDbEnv != "" {
+		fileDb = db.FileDbEnv
 	}
 
 	err_db := db.Init(fileDb)
@@ -35,9 +47,7 @@ func main() {
 
 	api.Init()
 
-	port := ":" + os.Getenv("TODO_PORT")
-
-	err := http.ListenAndServe(port, nil)
+	err := http.ListenAndServe(api.Port, nil)
 	if err != nil {
 		panic(err)
 	}

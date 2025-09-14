@@ -11,7 +11,7 @@ import (
 
 func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 
-	date, err := time.Parse("20060102", dstart)
+	date, err := time.Parse(formatDate, dstart)
 	if err != nil {
 		return "", err
 	}
@@ -143,15 +143,19 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 		return "", fmt.Errorf("wrong format repeat")
 	}
 
-	return date.Format("20060102"), nil
+	return date.Format(formatDate), nil
 
 }
 
 func afterNow(date1, date2 time.Time) bool {
-	return date1.Format("20060102") > date2.Format("20060102")
+	return date1.After(date2)
 }
 
 func nextDayHandler(res http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		http.Error(res, "incorrect method od request", http.StatusBadRequest)
+	}
+
 	var now time.Time
 	valNow := req.FormValue("now")
 

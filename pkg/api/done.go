@@ -8,13 +8,17 @@ import (
 
 func doneHandler(res http.ResponseWriter, req *http.Request) {
 
+	if req.Method != http.MethodPost {
+		http.Error(res, "incorrect method od request", http.StatusBadRequest)
+	}
+
 	id := req.URL.Query().Get("id")
 
 	var answer Answer
 	task, err := db.GetTask(id)
 	if err != nil {
 		answer.Error = err.Error()
-		writeJson(res, answer)
+		writeJson(res, answer, http.StatusBadRequest)
 		return
 	}
 
@@ -22,7 +26,7 @@ func doneHandler(res http.ResponseWriter, req *http.Request) {
 		err := db.DeleteTask(task.ID)
 		if err != nil {
 			answer.Error = err.Error()
-			writeJson(res, answer)
+			writeJson(res, answer, http.StatusInternalServerError)
 			return
 		}
 	} else {
@@ -31,18 +35,18 @@ func doneHandler(res http.ResponseWriter, req *http.Request) {
 		next, err := NextDate(now, task.Date, task.Repeat)
 		if err != nil {
 			answer.Error = err.Error()
-			writeJson(res, answer)
+			writeJson(res, answer, http.StatusBadRequest)
 			return
 		}
 
 		err = db.UpdateDate(next, task.ID)
 		if err != nil {
 			answer.Error = err.Error()
-			writeJson(res, answer)
+			writeJson(res, answer, http.StatusInternalServerError)
 			return
 		}
 	}
 
-	writeJson(res, answer)
+	writeJson(res, answer, http.StatusOK)
 
 }

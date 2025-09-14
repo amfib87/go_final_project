@@ -38,7 +38,7 @@ func addTaskHandler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	answer.Id = task.ID
-	writeJson(res, answer)
+	writeJson(res, answer, http.StatusOK)
 
 }
 
@@ -46,10 +46,10 @@ func checkDate(task *db.Task) error {
 	now := time.Now()
 
 	if task.Date == "" {
-		task.Date = now.Format("20060102")
+		task.Date = now.Format(formatDate)
 	}
 
-	t, err := time.Parse("20060102", task.Date)
+	t, err := time.Parse(formatDate, task.Date)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func checkDate(task *db.Task) error {
 	if afterNow(now, t) {
 		if len(task.Repeat) == 0 {
 			// если правила повторения нет, то берём сегодняшнее число
-			task.Date = now.Format("20060102")
+			task.Date = now.Format(formatDate)
 		} else {
 			// в противном случае, берём вычисленную ранее следующую дату
 			task.Date = next
@@ -80,7 +80,7 @@ func checkDate(task *db.Task) error {
 
 }
 
-func writeJson(res http.ResponseWriter, data any) {
+func writeJson(res http.ResponseWriter, data any, code int) {
 	resp, err := json.Marshal(data)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -88,7 +88,7 @@ func writeJson(res http.ResponseWriter, data any) {
 	}
 
 	res.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	//res.WriteHeader(http.StatusCreated)
+	res.WriteHeader(code)
 	res.Write([]byte(resp))
 
 }

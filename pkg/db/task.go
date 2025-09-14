@@ -43,12 +43,12 @@ func Tasks(limit int, condText string, condDate string) ([]*Task, error) {
 	textUp = "%" + textUp + "%"
 
 	if condDate != "" {
-		rowSelect = `SELECT * FROM scheduler WHERE date = :date ORDER BY date LIMIT :limit`
+		rowSelect = `SELECT id, date, title, comment, repeat FROM scheduler WHERE date = :date ORDER BY date LIMIT :limit`
 	} else if condText != "" {
-		rowSelect = `SELECT * FROM scheduler WHERE title LIKE :textUp 
+		rowSelect = `SELECT id, date, title, comment, repeat FROM scheduler WHERE title LIKE :textUp 
 					OR title LIKE :textLow OR comment LIKE :textUp OR comment LIKE :textLow ORDER BY date LIMIT :limit`
 	} else {
-		rowSelect = "SELECT * FROM scheduler ORDER BY date LIMIT :limit"
+		rowSelect = "SELECT id, date, title, comment, repeat FROM scheduler ORDER BY date LIMIT :limit"
 	}
 
 	rows, err := Db.Query(rowSelect, sql.Named("limit", limit), sql.Named("date", condDate),
@@ -78,17 +78,17 @@ func Tasks(limit int, condText string, condDate string) ([]*Task, error) {
 
 }
 
-func GetTask(id string) (*Task, error) {
+func GetTask(id string) (task *Task, err error) {
+	task = &Task{}
 
-	var task = Task{}
-	rowSelect := `SELECT * FROM scheduler WHERE id = :id`
+	rowSelect := `SELECT id, date, title, comment, repeat FROM scheduler WHERE id = :id`
 
-	err := Db.QueryRow(rowSelect, sql.Named("id", id)).Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+	err = Db.QueryRow(rowSelect, sql.Named("id", id)).Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 	if err != nil {
-		return &task, err
+		return task, err
 	}
 
-	return &task, nil
+	return task, nil
 
 }
 

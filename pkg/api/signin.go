@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -22,38 +21,43 @@ type typePass struct {
 	Password string `json:"password"`
 }
 
+var PassVar string
+
 func signinHandler(res http.ResponseWriter, req *http.Request) {
+
+	if req.Method != http.MethodPost {
+		http.Error(res, "incorrect method od request", http.StatusBadRequest)
+	}
 
 	var buf bytes.Buffer
 	var answer answerSignin
 	var pass typePass
 
-	passVar := os.Getenv("TODO_PASSWORD")
-	if len(passVar) == 0 {
-		writeJson(res, answer)
+	if len(PassVar) == 0 {
+		writeJson(res, answer, http.StatusInternalServerError)
 		return
 	}
 
 	_, err := buf.ReadFrom(req.Body)
 	if err != nil {
 		answer.Error = err.Error()
-		writeJson(res, answer)
+		writeJson(res, answer, http.StatusBadRequest)
 		return
 	}
 
 	if err = json.Unmarshal(buf.Bytes(), &pass); err != nil {
 		answer.Error = err.Error()
-		writeJson(res, answer)
+		writeJson(res, answer, http.StatusBadRequest)
 		return
 	}
 
-	if pass.Password != passVar {
+	if pass.Password != PassVar {
 		answer.Error = fmt.Sprint("wrong password")
-		writeJson(res, answer)
+		writeJson(res, answer, http.StatusBadRequest)
 		return
 	}
 
-	hashPass := sha256.Sum256([]byte(passVar))
+	hashPass := sha256.Sum256([]byte(PassVar))
 	str := fmt.Sprintf("%x", hashPass)
 
 	claims := jwt.MapClaims{
@@ -64,10 +68,10 @@ func signinHandler(res http.ResponseWriter, req *http.Request) {
 	signedToken, err := jwtToken.SignedString([]byte(secret)) // получаем подписанный токен
 	if err != nil {
 		answer.Error = err.Error()
-		writeJson(res, answer)
+		writeJson(res, answer, http.StatusInternalServerError)
 	}
 
 	answer.Token = signedToken
-	writeJson(res, answer)
+	writeJson(res, answer, http.StatusOK)
 
 }
